@@ -1,0 +1,249 @@
+---
+title: "Homework3"
+author: "Emili Robles"
+date: "2024-11-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(ggplot2)
+library(dplyr)
+library(ggstream)
+library(tidyr)
+library(lubridate)
+library(tidygraph)
+library(ggraph)
+library(readr)
+library(igraph)
+library(tsibble)
+library(feasts)
+library(sf)
+library(tidytuesdayR)
+library(tidyverse)
+```
+## Q1.
+```{r}
+bike_demand <- read.csv("Data/bike.csv")
+
+#a.
+bike_plot <- ggplot(bike_demand, aes(x = hr, y = count)) +
+  geom_line() +
+  facet_grid(weekday ~.)
+bike_plot
+
+#b.
+new_bike_demand <- bike_demand%>%
+  group_by(yr, weekday, hr)%>%
+  summarise(
+    Q1 = quantile(count, 0.25, na.rm = TRUE),
+    Q3 = quantile(count, 0.75, na.rm = TRUE)
+  )%>%
+  ungroup()
+
+head(new_bike_demand, 10)
+
+#c.
+bike_plot_ribbon <- ggplot() +
+  geom_line(data = bike_demand, aes(x = hr, y = count, color = as.factor(yr))) +
+  geom_ribbon(
+    data = new_bike_demand,
+    aes(x = hr, ymin = Q1, ymax = Q3, fill = as.factor(yr)),
+    alpha = 0.3
+  ) +
+  facet_grid(weekday ~ .)
+
+bike_plot_ribbon
+```
+
+#### d. The final visualization provides a clearer view of the trend for when there's more demand of bikes through each day of the week. Now the visualized ribbons- in this case Q1 and Q3 show the peak demand that occurs at specific hours and we see that it's around the 15 - 20 hour mark.
+
+## Q2.
+
+#### a. 
+#### 1. What activities do people participate the most in throughout the day (morning, afternoon and evening)?
+#### 2. I also wonder how much people walk throughout the day and if it's the most popular activity since it's the easiest activity to complete. 
+#### 3. From that as well, I wonder what timepoints people usually walk the most through out the day? I feel as if it'd die down when it gets late in the day- so it would be interesting to see the peak points. 
+
+```{r}
+activity <- read.csv("https://github.com/krisrs1128/stat992_f23/raw/main/exercises/ps2/activity.csv")
+
+activity <- activity %>%
+  mutate(time = as.POSIXct(time, format = "%Y-%m-%dT%H:%M:%SZ"))
+
+#b.
+line_plot <- ggplot(activity, aes(x = time, y = prop_smooth, color = activity)) +
+  geom_line() +
+  labs(
+    title = "Smoothed Proportion of Activities Throughout the Day",
+    x = "Time of Day",
+    y = "Proportion (Smoothed)",
+    fill = "Activity"
+  ) +
+  theme(legend.position = "bottom")
+line_plot
+
+#c.
+heatmap_plot <- ggplot(activity, aes(x = time, y = activity, fill = prop_smooth)) +
+  geom_tile() +
+  scale_fill_viridis_c(option = "plasma") +
+  labs(
+    title = "Heatmap of Activity Proportions Over Time",
+    x = "Time",
+    y = "Activity",
+    fill = "Proportion (Smoothed)"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom"
+  )
+heatmap_plot
+
+```
+
+#### With the heatmap, we can immediately grasp the intensity of activity proportions across both time and activity categories. It provides a clear view of trends throughout the day (morning, afternoon, and evening) by highlighting clusters of high and low intensity. For instance, while I initially wondered if walking might be the most popular activity because it’s the "easiest," the heatmap reveals that biking and fishing show more variability throughout the day and also reach higher peaks. Additionally, the heatmap makes it easier to pinpoint specific timepoint peaks. For walking, we can now clearly observe how its intensity decreases as the day starts and ends, providing a better understanding of its daily pattern.
+
+## Q3.
+
+```{r}
+edges <- read_csv("https://go.wisc.edu/but14m", col_types = "cci")
+nodes <- read_csv("https://go.wisc.edu/563cy6", col_types = "ccc")
+
+#a.
+edges_nodes <- tbl_graph(nodes = nodes, edges = edges, directed = TRUE)
+edges_nodes
+
+#b.
+ggraph(edges_nodes, layout = "fr") + 
+  geom_edge_link(alpha = 0.5, color = "gray") +  
+  geom_node_point(aes(color = political_ideology), size = 5) +  
+  geom_node_text(aes(label = label), repel = TRUE, size = 3) +  
+  scale_color_manual(values = c("blue", "red", "purple")) + 
+  labs(
+    title = "Node-Link Diagram of Political Book Recommendations",
+    color = "Political Ideology"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+#c.
+adj_matrix <- as.matrix(as_adjacency_matrix(edges_nodes, attr = NULL, sparse = FALSE))
+adj_long <- as.data.frame(as.table(adj_matrix)) %>%
+  rename(from = Var1, to = Var2, connection = Freq)
+adj_long_filtered <- adj_long %>%
+  filter(connection == 1)
+
+ggplot(adj_long_filtered, aes(x = from, y = to)) +
+  geom_point(color = "black", size = 3) + 
+  labs(
+    title = "Binary Adjacency Matrix of Political Book Recommendations",
+    x = "Book Title",
+    y = "Book Title"
+  ) +
+  theme_minimal()
+
+```
+
+## Q4.
+
+```{r}
+calfresh <- read_csv("https://uwmadison.box.com/shared/static/rduej9hsc4w3mdethxnx9ccv752f22yr.csv")|>
+                     filter(date != "2019 Feb") |>
+                       mutate(date = yearmonth(date)) |>
+                       as_tsibble(key = county, index = date)
+#a.
+calfresh_features <- calfresh %>%
+  features(calfresh, feature_set(pkgs = "feasts"))
+
+#b.
+highest_seasonal <- calfresh_features %>%
+  slice_max(seasonal_strength_year, n = 1) %>%
+  pull(county)
+
+lowest_seasonal <- calfresh_features %>%
+  slice_min(seasonal_strength_year, n = 1) %>%
+  pull(county)
+
+selected_counties <- calfresh %>%
+  filter(county %in% c(highest_seasonal, lowest_seasonal))
+
+ggplot(selected_counties, aes(x = date, y = calfresh, color = county)) +
+  geom_line(size = 1) +
+  labs(
+    title = "CalFresh Enrollment Over Time",
+    x = "Date",
+    y = "Enrollment",
+    color = "County"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+#c.
+sf_use_s2(FALSE)
+counties <- read_sf("https://uwmadison.box.com/shared/static/gropucqxgqm82yhq13do1ws9k16dnxq7.geojson")
+
+counties_features <- counties %>%
+  left_join(calfresh_features, by = c("county" = "county"))
+
+ggplot(counties_features) +
+  geom_sf(aes(fill = seasonal_strength_year), color = "white", lwd = 0.2) +  
+  scale_fill_viridis_c(option = "plasma", name = "Seasonal Strength") + 
+  labs(
+    title = "Seasonal Strength of CalFresh Enrollment by County",
+    subtitle = "By seasonal strength"
+  ) +
+  theme_minimal()
+
+```
+
+#### d. I propose to make an interactive county-level time series dashboard where users can explore CalFresh enrollment trends across California counties over time. The questions the dashboard could answer would be discovering temporal trends by seeing how the CalFresh enrollment changed over time for a specific county or cluster of counties. It could also serve to compare across counties and see if there's any temporal correlations between neighboring counties. The structure of interaction would have a geospatial map for the user to hove over a county and display additional data and adjust the visual through seasonal strength, average enrollment, or trend. The display would update by clicking the county and a linked time series plot updating with the CalFresh enrollment trend over time. Additionally as talked about before, hovering over a counter updates the tooltip with key metrics like showing details to seasonal strength, total enrollment, etc. 
+
+## Q5.
+
+#### a. Vector data. The geometries are found inside each feature that has a geometry object with a type field. The types of geometries: Points - individual coordinates, Lines - pairs of coordinates, and Polygon - multiple coordinate pairs that form a shape.
+#### b. Raster data format. 
+#### c. Vector data. This looks to have polygons for the type of geometry because it only has arcs as a field which contains a list of coordinates, which can define a shape.
+#### d.Vector data. This only has Points because the attributes all look different and it looks like it's a list of different fuel stations, meaning each property is a different station to plot.
+#### e. Raster data format.
+
+## Q6.
+
+#### a. I decided to pick the Bobs Burger. I could focus on whether episodes with longer dialogue lines have more varied sentiment by making a scatter plot of avg_length vs. sentiment_variance. I can use color to represent the seasons or highlight the outliers with high/low values.
+#### b. The dataset I chose is fairly new from TidyTuesday so there's only one visual so far. This visualization is an excellent example of a well-designed infographic, using small multiples and contrasting color encodings (blue for questions, pink for exclamations) to effectively highlight trends across seasons. The layout is clean, and the title and annotations provide a helpful high-level overview of the data. However, the red circles, meant to highlight episodes where exclamations exceed questions, don't add much value as they are inconsistently applied and lack specificity, making it hard to explore details. A better approach might involve adding episode annotations or interactive elements to allow for deeper exploration while maintaining the clarity of the design.
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2024-11-19')
+episode_metrics <- tuesdata$episode_metrics
+
+ggplot(episode_metrics, aes(x = avg_length, y = sentiment_variance, color = as.factor(season))) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5, linetype = "dashed", alpha = 0.5) + 
+  facet_wrap(~ season, ncol = 4, scales = "free") + 
+  scale_color_brewer(palette = "Set3") + # Better color palette
+  labs(
+    title = "Dialogue Length vs Sentiment Variance Across Seasons",
+    subtitle = "Each season shows distinct patterns in dialogue length and sentiment variability",
+    x = "Average Dialogue Length",
+    y = "Sentiment Variance",
+    color = "Season"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text = element_text(size = 10),
+    axis.title = element_text(size = 12, face = "bold"),
+    strip.text = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 12, face = "italic", hjust = 0.5)
+  )
+
+```
+
+#### c. As part of this week’s #TidyTuesday, I explored how dialogue metrics in Bob's Burgers change across episodes and seasons. Specifically, I analyzed the relationship between average dialogue length and sentiment variance, asking: Do episodes with longer dialogue lines also exhibit more varied sentiment?
+#### This scatter plot examines the relationship between average dialogue length and sentiment variance across all episodes of Bob's Burgers, with each point representing an episode.

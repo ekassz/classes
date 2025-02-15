@@ -1,0 +1,25 @@
+.card{
+    padding: 0;
+    border: auto;
+}
+.card-body{
+    flex: 1 0 auto;
+}
+.card-footer{
+    margin-top: auto;
+    border: 0;
+    
+}
+.row{
+    display: flex;
+    flex-wrap: wrap;
+}
+.card-footer .btn {
+    width: 50%; /* This will make each button fill the footer, adjust if you have multiple buttons side by side */
+    height: 100%; /* Only set this if it makes sense for your design */
+}
+.btn-primary {
+    padding: 50;
+    border-radius: 8px;
+
+}

@@ -1,0 +1,13 @@
+name: PortfolioProject
+title: PortfolioProject
+username: ekass
+account: ekass
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13088954
+bundleId: 9253479
+url: https://ekass.shinyapps.io/PortfolioProject/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: HW2-Stat436-Emili-Robles.pdf

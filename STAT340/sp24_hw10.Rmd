@@ -1,0 +1,249 @@
+---
+title: "Homework 10"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Problem 1. Warm up: Log-Odds, Odds and Probability <small>5 points; 1 point each</small>
+
+a. Convert a log-odds of 1.75 to probability.
+
+```{r}
+o = exp(1.75)
+p = o / (1+o)
+p
+```
+
+b. Convert probability of 0.85 to odds.
+
+```{r}
+p = 0.85 / (1-0.85)
+p
+```
+
+c. Event A has a probability of 0.7 and the odds ratio of A to B is 1.45. Calculate the probability of event B.
+
+```{r}
+odds_A_B = 1.45
+prob_A = 0.7
+oddsA = .7 / .3
+oddsB = oddsA / odds_A_B
+prob_B = oddsB / (1+oddsB)
+prob_B
+```
+
+d. You roll a single 6 sided die. What are the odds you get a number divisible by 3?
+```{r}
+odds = (2/6) / (1 - (2/6))
+odds
+```
+
+
+e. The odds ratio comparing event A to B is 9 and the risk ratio is 3. What is $Pr(A)$? *Hint: let $Pr(A)=a$ and $Pr(B)=b$, and write out the odds ratio and risk ratio as equations. 
+
+```{r}
+
+```
+
+
+
+## Problem 2. Interpreting logistic regression <small>6pts; 2 pts each</small>
+
+Suppose we collect data for a group of students in a statistics class with independent variables $X_{1}=\text{hours studied}$, $X_{2}=\text{GPA}$, and binary response variable
+$$
+Y= \begin{cases} 1 &\mbox{ if student received an A} \\
+  0 &\mbox{ otherwise. }
+  \end{cases}
+$$
+Suppose that we fit a logistic regression model to the data, predicting $Y$ from $X_1$ and $X_2$ (and an intercept term) and produce estimated coefficients $\hat{\beta}_{0}=-6, \hat{\beta}_{1}=0.05, \hat{\beta}_{2}=1$.
+
+### Part a) Logistic regression and probability
+
+According to our fitted model, what is the probability that a student receives an A if they study for $40$ hours and have a GPA of $3.5$?
+
+```{r}
+
+# TODO: code goes here.
+```
+
+### Part b) Interpreting coefficients
+According to our fitted model, an additional hour spent studying is associated with *how much* of an increase in the log odds of receiving an A?
+
+```{r}
+
+#TODO: code for calculation goes here
+
+```
+
+### Part c) "Inverting" logistic regression probabilities
+According to our fitted model, how many hours would the student in Part (a) need to study to have a $50\%$ chance of getting an A in the class?
+That is, keeping GPA fixed at $3.5$, how many hours of study are needed so that the probability of an A is $50\%$?
+If you aren't up for the math, feel free to find an approximate solution via guess-and-check in R.
+
+***
+
+TODO: explanation goes here
+
+***
+
+```{r}
+
+#TODO: code for calculation goes here, if necessary.
+
+```
+
+
+
+## Problem 3. Palmer Penguins Part I  <small>9pts; 3 pts each</small>
+
+The Palmer Penguin dataset (https://allisonhorst.github.io/palmerpenguins/) consists of 344 observations of penguins belonging to 3 penguin species across the islands in the Palmer Archipeligo in Antarctica. We will build a logistic model attempting to classify the penguins based on physical characteristics. For each penguin we've recorded: 
+
+* `species` - the species, either "Gentoo", "Adelie" or "Chinstrap"
+* `island` - which of three islands the Penguin was observed (Biscoe, Dream or Torgersen)
+* `bill_length_mm` - the length of the bill in mm
+* `bill_depth_mm` - the depth of the bill (vertical thickness of the closed bill)
+* `filler_length_mm` - length of their cute flippers
+* `body_mass_g` - the body mass in grams
+* `sex` - female, male or NA (unknown)
+* `year` - The year of the observation: 2007, 2008 or 2009
+
+First you need to download the library. Run this chunk of code once.
+```{r, eval=FALSE, echo=FALSE}
+#Run this code once to install the library
+install.packages("palmerpenguins")
+```
+
+Then load the library and the penguin dataset. Note: Your RMD won't knit until you run the above chunk.
+```{r}
+library(palmerpenguins)
+```
+
+### a) Adelie penguins based on island
+
+We are going to try to classify penguins as **Adelie** or **not Adelie**. So create a new variable called `Adelie` which will be 1 or 0 based on whether the penguin species is Adelie
+
+```{r}
+#Your code goes here
+```
+
+Perform some analysis looking at each of the 3 islands - create a 2 way table between `island` and the `Adelie` variable. Look at the proportions conditioned on island. What proportion of observations on each island were Adelie?
+
+```{r}
+#your code goes here
+```
+
+***
+write your answer here
+
+***
+
+### b) Adelie Penguins on Dream
+
+Find the (i) probability, (ii) odds and (iii) log-odds that a randomly selected penguin from Dream is an Adelie penguin?
+
+```{r}
+#your code goes here
+```
+
+***
+write your answer here
+
+***
+
+### c) An island-based classifier
+
+Now fit a logistic model predicting whether a penguin is Adelie based on island.
+Interpret the intercept and the coefficient of the `islandDream` variable. Use this model to predict the probability that a penguin from Dream is Adelie.
+
+```{r}
+#your code goes here
+```
+
+***
+write your answer here
+
+***
+
+
+
+## Problem 4. Penguins Part II <small>10pts; 2 pts each</small>
+
+In this problem we will work once again with the Palmer Penguin dataset. We will work with a subset by taking out all missing values. After you have installed the package and loaded the library, uncomment the line below.
+```{r}
+# penguins.complete <- penguins[complete.cases(penguins),]
+```
+
+### a) Predicting Palmer Penguins with quantitative Predictors
+
+Now use the two bill measurements (`bill_length_mm` and `bill_depth_mm` as predictors in a new logistic model. Suppose a penguin with a bill length of 53.1 and a bill depth of 22.7 is observed. What is the model's probability that the penguin is an Adelie penguin?
+
+```{r}
+#your code goes here
+```
+
+***
+
+write your answer here
+
+***
+
+### b) Interpreting coefficients
+
+Are longer bills associated with an increased or decreased likelihood that a penguin is an Adelie penguin?
+
+***
+
+write your answer here
+
+***
+
+### c) A full classifier
+
+Fit a logistic model to predict whether a penguin is a **Chinstrap** penguin using all four of the biological measurements (`bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, and `body_mass_g`). 
+
+```{r}
+#your code goes here
+```
+
+Which of the predictors are significant?
+
+***
+
+write your answer here
+
+***
+
+
+### d) Assessing the model
+Suppose you will predict that a penguin is a Chinstrap if the estimated $\hat{y}=\sigma(\hat{z})>0.5$. When predicting using this threshold, what is the type 1 error rate of your predictor on the dataset? What is power of the predictor on the dataset? 
+*Hint: you will want to compare the predicted $\hat{y}$ values to the actual $y$ values. The `table` command can produce a 2x2 confusion matrix to help you answer this question.*
+
+
+```{r}
+#your code goes here
+```
+
+***
+
+write your answer here
+
+***
+
+
+### e) Adjusting the Type 1 error rate
+
+Now modify your threshold from 0.5 to some other threshold with the goal of achieving the highest power possible while keeping the type 1 error rate  below 0.05. What threshold would you use? What is the type 1 error rate and power of this new classifier?
+
+```{r}
+#your code goes here
+```
+
+***
+
+write your answer here
+
+***

@@ -1,0 +1,148 @@
+---
+title: "Homework 1"
+output: 
+  html_document:
+    self_contained: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=T,eval=T,message=F,warning=F,fig.align='center')
+library(tidyverse)
+```
+
+
+## Problem 1 <small>(2pts each, 8pts total)</small>
+
+Here are a few probability exercises to get you warmed up.
+
+a. Consider $X\sim \text{Normal}(5, 2^2)$. Find $P(4 < X < 7)$
+```{r question-1a}
+pnorm(7, mean=5, sd=2) - pnorm(4, mean = 5, sd =2)
+
+```
+b. Suppose you have an uneven 6-sided die where the even numbers are equally likely to occur and the odd numbers are also equally likely. The expected value of the die is $3.3333$ (i.e. $\frac{10}{3})$. What is the probability of getting a 6?
+   (Hint: Let $p$ represent the probability of getting an even number, and represent the probability of the other numbers algebraically. Then derive an expression for the expected value, let it equal $\frac{10}{3}$, and solve. You can go back and check your work by plugging the result back into your original expressions and verify it works with R.)
+```{r question-1b}
+p <- 1/3
+even_prob <- p/3
+odd_prob <- (1-p)/3
+ev <- 1*odd_prob + 2*even_prob + 3*odd_prob + 4*even_prob + 5*odd_prob + 6*even_prob
+print(ev)
+```
+c. Give **two examples** of pairs of events that are mutually exclusive and explain why for each.
+```{r question-1c}
+#need to generate random outputs
+#set.seed(100)
+#make a coin flip 
+flip <- sample(c('heads', 'tails'), size = 1, replace = TRUE)
+if(flip == 'heads'){
+  print("heads only printed out not tails, making it mutually exclusive.")
+}else{
+  print("tails only printed out, making it mutually exclusive") }
+```
+A coin flip with heads and tails is mutually exclusive because you can't get both as an outcome in one try, I proved it by making a simulation of it and it never pops up as both heads and tails, making it mutually exclusive.
+```{r}
+roll <- sample(c(1:6), size = 1, replace = TRUE)
+roll
+```
+A dice is also mutually exclusive because you can get multiple numbers at the same time as shown by the code, only one number is able to pop up each time.
+
+d. Give **two examples** of pairs of events that are independent and explain why for each.
+```{r question-1d}
+set.seed(100)
+marbles <- sample(c('blue', 'black'), size = 2, replace= TRUE)
+marbles
+```
+This is an independent set because I'm able to pull out marbles 2 times in a row and the outcome of the first draw doesn't affect the outcome of the second draw.
+```{r}
+set.seed(110)
+lights <- sample(c('on','off') ,size = 2, replace = TRUE)
+lights
+```
+This is an independent set because I have 2 lights in a room and I can turn both either on or off because the outcome from the first light doesn't affect whether to turn off or on to the other one.
+
+## Problem 2 <small>(2pts each, 14pts total)</small>
+
+For each of the following scenarios, decide what random variable may be appropriate to use as a model, and explain your reasoning as well as any assumptions you make.
+
+a. The number of patients in an experimental drug trial that respond to treatment.
+```{r question-2a}
+#I'd use a binomial random variable because we have a certain number of patients in the experiment and we can assume that mostly there will be a percentage of them that respond to the treatment.
+```
+
+
+b. The number of red cars you observe driving through an intersection between 10am and 11am.
+```{r question-2b}
+#Poisson random variable because we essentially want to model how many red cars we see and because we are assuming that we will see some + we're given an exact timeframe of 1 hour, it makes it poisson.
+```
+
+c. What the second hand reads on the clock when you wake up from a long nap (approximately).
+```{r question-2c}
+#A uniform random variable because we're assuming that any second from 0 - 59 is equally likely so a uniform distribution would be able to get a model of the randomness of what time you wake up to.
+```
+
+
+d. How many people you need to swipe right on Tinder before you get a match.
+```{r question-2d}
+#Geometric random variable because assuming that it takes countless repeated rejections, we consider that number right before it lands on a match.
+```
+
+e. The length of time between mosquito bites a camper experiences while on a hike.
+```{r question-2e}
+#Exponential random variable, because this problem is like a poisson but assuming that we don't know the time that the hike will happen in, we have to use exponential instead of poisson.
+```
+Exponential random variable because because we dont know the exact time frame. 
+
+f. Whether the Eagles win the Superbowl this year.
+```{r question-2f}
+#Bernoulli random variable because assuming that the Eagles are playing, we assume only 2 outcomes which is win or not win, which connects to a yes or no outcome.
+```
+
+g. The GPA of a randomly selected UW-Madison graduate.
+```{r question-2g}
+#Normal random variable because we're assuming that the GPA distributions are symmetric so we can do a normal model when we deal with the gpa averages.
+```
+
+## Problem 3 <small>(2pts each, 8pts total)</small>
+
+Below you will find the plot of a probability density function for a random variable $X$.
+
+```{r, echo=FALSE}
+plot(x=c(0,1,2,3), y=c(0,.5,.5,0), type="l", ylab="density", xlab="x", main="pdf of X")
+```
+
+Using just geometry answer a and b:
+
+a. What is $Pr[X < 1]$?
+```{r question-3a}
+area = (1/2)*1*.5
+area
+```
+
+b. What is $Pr[1.5 < X < 2.5]$
+```{r question-3b}
+area1 = 1*0.3
+area2 = 0.5*0.2
+area3 = (1/2)*0.5*0.2
+total = area1 + area2 + area3
+total
+
+```
+
+c. Consider the CDF given below for random variable $Y$ (we're not naming it $X$ to keep it distinct from parts a and b)
+```{r}
+plot(x=0:6, y=c(0,.3,.5, .6, .75,.8,1), type="s", ylab="F(y)", xlab="y", main="cdf of Y")
+abline(h=seq(.1,.9,.1), lty=2, col="gray")
+
+```
+Express the pmf of $Y$ in the following R code (in other words, fill in the missing probabilities)
+```{r}
+y<- 1:6
+py <- c(.3,.2,.1,.15,.05,.2) ## edit this line
+barplot(height=py, names=y, main="pmf of Y")
+```
+d. Calculate $E[Y]$ for the variable $Y$ in part c.
+```{r question-3d}
+sum = 1*.3 + 2*.2 + 3*.1+ 4*.15 +5*.05+ 6*.2
+sum
+```

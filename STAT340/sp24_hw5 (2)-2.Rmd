@@ -1,0 +1,244 @@
+---
+title: "Homework 5"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Problem \#1: Testing coin flips <small>(6 pts)</small>
+
+In the six sequences below, only one of them is actually **randomly generated from independent flips of a fair coin**. Use a combination of everything you know (common sense, Monte Carlo, hypothesis testing, etc.) to identify which is actually random and explain your reasoning.
+
+(For full points, conduct a formal test and report a p-value for each sequence. You may use a combination of multiple tests to arrive at your answer. If you cannot compute a p-value for each sequence, you can still earn a significant amount of partial credit by carefully explaining your reasoning and response as best as you can.)
+
+My advice is **be creative** with the test statistics you come up with to eliminate each sequence! Think of some way of summarizing a sequence of flips that might be useful for comparing against a simulated sequence of random flips. After you come up with an idea for a statistic, remember to run it on many MC generated completely random flips to produce a distribution under the null, which you can then compare with your data to get a p-value. Also, be careful of now you define "more extreme" than the data.
+
+(2 bonus points available if you can find a single test that is powerful enough to reject all the fake sequences together in one step. Yes, at least one such possible test exists.)
+
+```{r}
+flips1 = "HTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHTHT"
+
+flips2 = "HHHTHTTTHHTHHTHHHTTTTHTHTHHTTHTHHHTHHTHTTTHTHHHTHTTTHTHTHHTHTHTTHTHHTHTHTTTHTHHHTHTHTTHTHTHHTHTHTHHHTHTTTHTHHTHTHTHHTTTHTHHTHHTTTTHTHTHHHTHTTHTHHTHTHTTHTHHTHTHHHTHHHTHTTTHTTHTTTHTHHHTHTHTTHTHHTHHTHTTT"
+
+flips3 = "HHTHTHTTTHTHHHTHHTTTHTHHTHTTTHTHTHHTHTHTTHTHHHHHHTTTHTHTHHTHTTTHTHHTHTHTTTHTHHHTTHTTTHTHTHHHHTHTTHHTTTTTHTHHHTHTHTTTTTHHHTHHTHHTHHHTTTTHTHTHHHTHHTTTTTHTHHHTHTHTHTTTHTHHHTHTHTHTTHTHHTHTHTHTTTTHTHHHTHTH"
+
+flips4 = "HTHHHHHHHTHTTHHTTHHHTHTHTTTHHTHHHTHHTTHTTTTTTTTTHTHHTTTTTHTHTHTHHTTHTTHTTTTTHHHTHTTTHTHTHHHTHTTTTHTHTHHTTHTHTTHHTHTHHHHTHTTHHTTHTTHTTHTHHHHHHTTTTTTHHHTTHTHHHHTTTHTTHHHTTHTHHTTTHHTHHTTTHTHHTHHHTHHTTHHH"
+
+flips5 = "HHHHHHHHHHTTTTTTTTTTHHHHHHHHHHTTTTTTTTTTHHHHHHHHHHTTTTTTTTTTHHHHHHHHHHTTTTTTTTTTHHHHHHHHHHTTTTTTTTTTHHHHHHHHHHTTTTTTTTTTHHHHHHHHHHTTTTTTTTTTHHHHHHHHHHTTTTTTTTTTHHHHHHHHHHTTTTTTTTTTHHHHHHHHHHTTTTTTTTTT"
+
+flips6 = "TTHTTTHTTTTTTTHTHTHTHTTHTTHTHHTHHTTTHHTHTTTHTHHTHHHTHTTHHTHHTTHTHTTTTHTHTTTHHTTTTTTTTHTHHTTHTTTTTTHTHTHTHTTTHTTHHTTHTTTHHTTTHTTHTTTTHTTTTHHTTTHTHTHHHTTTTTTHTHHTTTTTTTTTTTTHHHTTTHHHTTTHTTTHTHTTHTTTTTHT"
+
+# you can use the function below to split the above sequences in vectors of flips
+split = function(str) strsplit(str, split="")[[1]]
+flip1 = split(flips1)
+flip2 = split(flips2)
+flip3 = split(flips3)
+flip4 = split(flips4)
+flip5 = split(flips5)
+flip6 = split(flips6)
+```
+
+```{r}
+convert_sequence <- function(sequence) {
+  as.numeric(ifelse(sequence == "H", 1, 0))
+}
+
+calculate_serial_correlation <- function(numeric_sequence) {
+  cor(numeric_sequence[-length(numeric_sequence)], numeric_sequence[-1])
+}
+
+numeric_flips1 = convert_sequence(unlist(strsplit(flips1, "")))
+numeric_flips2 = convert_sequence(unlist(strsplit(flips2, "")))
+numeric_flips3 = convert_sequence(unlist(strsplit(flips3, "")))
+numeric_flips4 = convert_sequence(unlist(strsplit(flips4, "")))
+numeric_flips5 = convert_sequence(unlist(strsplit(flips5, "")))
+numeric_flips6 = convert_sequence(unlist(strsplit(flips6, "")))
+
+serial_correlation1 = calculate_serial_correlation(numeric_flips1)
+serial_correlation2 = calculate_serial_correlation(numeric_flips2)
+serial_correlation3 = calculate_serial_correlation(numeric_flips3)
+serial_correlation4 = calculate_serial_correlation(numeric_flips4)
+serial_correlation5 = calculate_serial_correlation(numeric_flips5)
+serial_correlation6 = calculate_serial_correlation(numeric_flips6)
+```
+
+```{r}
+
+n = 10000
+sim_correlations <- numeric(n)
+
+for (i in 1:n) {
+  sequence <- sample(c(0, 1), length(numeric_flips1), replace = TRUE)
+  sim_correlations[i] <- calculate_serial_correlation(sequence)
+}
+
+calculate_p_value <- function(observed_correlation, null_correlations) {
+  mean(abs(null_correlations) >= abs(observed_correlation))
+}
+
+p_value1 <- calculate_p_value(serial_correlation1, sim_correlations)
+p_value2 <- calculate_p_value(serial_correlation2, sim_correlations)
+p_value3 <- calculate_p_value(serial_correlation3, sim_correlations)
+p_value4 <- calculate_p_value(serial_correlation4, sim_correlations)
+p_value5 <- calculate_p_value(serial_correlation5, sim_correlations)
+p_value6 <- calculate_p_value(serial_correlation6, sim_correlations)
+
+p_value1
+p_value2
+p_value3
+p_value4
+p_value5
+p_value6
+```
+#From all the flips tested, flip4 and flip6 had actual p values we could generate a conclusion from to see if they were random or not. The p value for 6 was 15.13% chance of it being actually randomly generated compared to the 51.96% from flip 4 so this means that under the null hypothesis, flip 4 is the randomly generated sequence because by commmon sense it behaves more like a random sequence and it has a probability of 51% observing a serial correlation as extreme. 
+
+
+
+
+## Problem \#2: Finding the Trick Coin <small>(6 pts; 2pts each)</small>
+
+I have two coins in my pocket - a trick coin with two heads and a fair coin with one head and one tail(s?). We'll play a game. I will grab one coin at random, and flip it $N$ times. After that you will have to decide if it is the fair coin or the trick coin. The null hypothesis is that it is the fair coin. 
+
+**Decision Rule 1**: If after $N$ flips there are no tails, then you decide it is the trick coin. If there is at least 1 tail then you know it is the fair coin. 
+
+a. Using "Decision Rule 1", what is the lowest number of flips $N$ would you need in order to have a significance level less than 5% for this test?
+```{r}
+N = log(0.05) / log(0.5)
+N = ceiling(N)
+pbinom(0, N, 0.5)
+```
+#N = 5 to be less than 5% for a significance level.
+
+
+b. Using $N$ from part a, what is the power of the test?
+```{r}
+prob_heads = 1
+power_test = prob_heads^N
+power_test
+```
+
+#We got N as 4.3 which rounds up to 5 since it has to be an integer. This means that the power of the test is that after 5 flips, so the power of the test has to be 1 since it's effective 100% of the time.
+
+
+c. Suppose $N=4$ is decided. How can you modify the decision process to have a significance level of exactly 5%? Does this change the power of the test?
+
+#We can modify this decision process to add a criteria about also observing a pattern of flips like 1 tail. rather than just no tails at all because that's what makes N = 4 be around 6%. This most likely will change the power of the test to be lower because of another restriction we'd be putting in, causing it to have a less likely chance of happening.
+```{r}
+N = 4
+prob = 0.5^4
+prob
+modified_prob = dbinom(0:4, N, 0.5)
+modified_prob
+
+cumulative_probs_from_tail = cumsum(c(modified_prob[1], modified_prob[5]))
+cumulative_probs_from_tail
+
+closest_to_5_percent <- which.min(abs(cumulative_probs_from_tail - 0.05))
+closest_to_5_percent
+
+```
+
+d. Extra Credit (2 points): Suppose if you guess correct you win \$100 (and if you're wrong you get nothing), but each flip of the coin costs \$10. What strategy would you use to maximize your expected profit from this game?
+#You can first flip it and if its a tail then it's a fair coin and stop flipping. If there's a head, then you have to calculate your expected profit when guessing, being probability .50 * $90 - 0.5 * $10 = $40
+
+
+
+## Problem \#3: Testing the maximum of a uniform distribution <small>(8 pts; 2 pts each)</small>
+
+We sample $X_1, X_x,\ldots,X_n \overset{\text{iid}}\sim\text{Uniform}(0,m)$ where $m$ is an unknown maximum. Sleazy Jim tells you that $m=1$ but you're not so sure. The 50 values sampled are in the following data file:
+
+```{r}
+X <- read.csv("/Users/Emili/Desktop/STAT340/data/uniform_sample.csv")$x
+hist(X)
+```
+
+a. Write out in formal notation the null and alternative hypotheses.
+#Null Hypothesis: Sleazy Jims claim is that being the unknown maximum m is exactly 1.
+#Alternate Hypothesis: Since we're not so sure about Jims claim, we want to test if the true maximum is m is not equal to 1.
+
+b. Come up with a test statistic and measure your sampled data. Is this a one-sided test or two-sided test?
+
+d. Calculate the $p$-value for this data and make a conclusion.
+
+
+c. Simulate a distribution for the test statistic under the null hypothesis of size at least 1000. Display a histogram of your test statistic distribution.
+
+```{r}
+n = 50
+simulations = 1000
+
+observed_max = 2* mean(X)
+observed_max
+
+
+null = replicate(simulations, 2*mean(runif(n, 0, 1)))
+
+lower_tail <- mean(null <= observed_max)
+upper_tail <- mean(null >= observed_max)
+pvalue <- 2 * min(lower_tail, upper_tail)
+
+pvalue
+```
+#It's a two side test because I'm open to m being either greater or less than 1.
+```{r}
+null = replicate(simulations, max(runif(n, 0, 1)))
+hist(null)
+abline(v = observed_max, col= "red")
+
+```
+
+#The p value is significant at 6% probability of m being somewhere around 0 and 1 instead of 1 like Jim's claim meaning that this high p value doesn't prove that the null hypothesis is true.
+
+
+## Problem \#4: Rising Temperatures? <small>(10 pts; 2 pt each)</small>
+
+The `annual_avg_temp.csv` data file contains the US annual average temperature from 1875 through 2022.
+```{r}
+temp <- read.csv("/Users/Emili/Desktop/STAT340/data/annual_avg_temp.csv")
+temps <- temp$Annual.Average.Temperature.F
+plot(temp, type="l")
+```
+
+There seems to be a trend but it could be due to randomness. Your task is to perform a permutation test on the historical record of annual avg. temperatures to determine if there is statistical evidence of a real trend.
+
+a. State the null and alternative hypotheses
+#Null Hypothesis: The US annual average temperature from 1875 through 2022 trend is made from pure randomness.  
+#Alternate Hypothesis: The trend of the US annual average temperature from 1875 through 2022 is a real trend.
+
+b. Determine a test statistic that identify non-randomness in the temperatures
+```{r}
+observed_model = lm(temps ~ temp$Year)
+observed_slope = coef(observed_model)["temp$Year"]
+observed_slope
+
+simulations = 1000
+slopes = numeric(simulations)
+
+for(i in 1:simulations){
+  shuffle = sample(temp$Annual.Average.Temperature.F)
+  #test
+  model = lm(shuffle ~ temp$Year)
+  slopes[i] = coef(model)[["temp$Year"]]
+}
+```
+
+c. Decide whether the test will be a one or two-tailed test
+#This test should be a one-tailed test because the data trend is positive meaning that we want to find a real trend for being positive instead of looking at a  possible negative slope which clearly we can see that the data isn't doing. 
+
+d. Simulate a distribution of test statistics under the null hypothesis
+```{r}
+hist(slopes)
+```
+
+e. Calculate the test statistic on the observed data, calculate the $p$-value and state your conclusions.
+```{r}
+pvalue = sum(slopes >= observed_slope) / simulations
+pvalue
+```
+The pvalue is 0 meaning that there's a definite trend in the US annual average temperature from 1875 to 2022 and it's not due to randomness.
+
+*Hint: basing the test statistic on the differences between consecutive years may be a good idea.*
+

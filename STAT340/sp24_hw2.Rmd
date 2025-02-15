@@ -1,0 +1,202 @@
+---
+title: "Homework 2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=T,eval=T,message=F,warning=F,fig.align='center')
+library(tidyverse)
+```
+
+
+## 1. Independence of Events <small>(8 points, 2 points each)</small>
+
+A fair four-sided die (numbered 1,2,3 and 4) is rolled three times. Consider the following three events:
+
+A: "The sum is 6 or less"
+
+B: "The second roll is more than the first"
+
+C: "The sum is odd"
+
+D: "Exactly two of the rolls are the same"
+
+a. Are A and B independent?
+```{r}
+sum_prob = 0
+a_b = 0
+
+#go through all possibilities
+for (roll1 in 1:4) {
+  for (roll2 in 1:4) {
+    for (roll3 in 1:4) {
+      if (roll1 + roll2 + roll3 <= 6) {
+        sum_prob = sum_prob + 1
+      }
+      if((roll1 + roll2 + roll3 <= 6) && (roll2 > roll1)){
+        a_b = a_b + 1
+      }
+    }
+  }
+}
+#total prob sum
+total_sum_prob = 4^3
+#p(A)
+p_a = sum_prob / total_sum_prob
+#p_a
+
+#p(B)
+roll2_prob = 0
+for(roll1 in 1:4){
+  for(roll2 in 1:4){
+    if(roll2 > roll1){
+      roll2_prob = roll2_prob +1
+    }
+  }
+}
+total = 16
+p_b = roll2_prob / total
+#p_b
+
+#p(A AND B)
+p_a_b = a_b / total_sum_prob
+#p_a_b
+
+check <- p_a_b == p_a * p_b
+check
+```
+They're not independent because both can change eachothers probability 
+
+b. Are C and D independent?
+```{r}
+odd_prob = 0
+two_rolls = 0
+total_prob = 0
+for (roll1 in 1:4) {
+  for (roll2 in 1:4) {
+    for (roll3 in 1:4) {
+      if((roll1 + roll2 + roll3)%%2 == 1){
+        odd_prob = odd_prob +1
+      }
+      if((roll1 == roll2 && roll1 != roll3) ||
+         (roll2 == roll3 && roll2 != roll1) ||
+         (roll3 == roll1 && roll1 != roll2)){
+        two_rolls = two_rolls +1
+      }
+      if(((roll1 + roll2 + roll3)%%2 == 1) &&
+         (roll1 == roll2 && roll1 != roll3) ||
+         (roll2 == roll3 && roll2 != roll1) ||
+         (roll3 == roll1 && roll1 != roll2)){
+        total_prob = total_prob + 1
+      }
+    }
+  }
+}
+sum = 4^3
+p_c = odd_prob /sum
+p_d = two_rolls / sum
+p_c_d = total_prob / sum
+
+check2 <- p_c_d == p_c * p_d
+check2
+
+```
+They are also not independent because both overlap and can cause change
+
+c. Are A and C independent?
+```{r}
+total_probs = 0
+for (roll1 in 1:4) {
+  for (roll2 in 1:4) {
+    for (roll3 in 1:4) {
+      if ((roll1 + roll2 + roll3 <= 6) &&
+         (roll1 + roll2 + roll3)%%2 == 1 ) {
+        total_probs = total_probs +1
+      }
+    }
+  }
+}
+
+p_a_c = total_probs / sum
+#p_a_c
+check3 <- p_a_c == p_a * p_c
+check3
+```
+d. Are B and D independent?
+```{r}
+probs4 = 0
+for (roll1 in 1:4) {
+  for (roll2 in 1:4) {
+    for (roll3 in 1:4) {
+      if((roll2 >= roll1) &&
+         (roll1 == roll2 && roll1 != roll3) ||
+         (roll2 == roll3 && roll2 != roll1) ||
+         (roll3 == roll1 && roll1 != roll2)){
+           probs4 = probs4 + 1
+         }
+    }
+  }
+}
+p_b_d = probs4 / sum
+check4 <- p_b_d == p_b * p_d
+check4
+
+
+```
+
+## 2. Stock Portfolio <small>(8 points, 2 points each)</small>
+
+Consider two stocks. Stock A has a mean annual return of 0.05 and a standard deviation of 0.01. Stock B has a mean annual return of 0.10 and a standard deviation of 0.04. Past data suggests that the prices have a correlation of -0.65.
+You have \$1000 to invest in a portfolio composed of these two stocks. 
+
+a. Suppose you invest \$500 in stock A and \$500 in stock B. What will be the expected return and the standard deviation of your portfolio (in dollars)? 
+*Hint:* $SD(aX+bY) = \sqrt{Var(aX+bY)}= \sqrt{a^2Var(X)+2abCov(X,Y)+b^2Var(Y)}$ and $Cov(X,Y)=\sigma_X \sigma_Y \rho_{XY}$
+```{r}
+#A - expected return 0.05 
+#A - o_x - 0.01
+#B - expected return 0.10
+#B - o_y - 0.04
+#prices, correlation of -0.65
+#w_a -  
+#w_b
+#$1000 to invest in A and B
+
+```
+b. Give an expression for the standard deviation for a portfolio investing $\$x$ in stock A and $\$1000-x$ in stock B. 
+```{r}
+#w_a = x/1000
+#w_b = 1000 - x/1000
+#have to do same as standard but just format it
+
+
+```
+c. Find the value $x$ that minimizes this standard deviation. 
+d. What is the expected return and standard deviation (in dollars) for the portfolio split you chose in part c?
+
+## 3. Mousetrap: A Rube Goldberg Machine  <small>(5 points, 1 points each)</small>
+
+Consider the board game Mousetrap. When you trigger the ball needs to 
+
+1. roll down a ramp
+2. be carried up by a hammer
+3. roll  down another ramp
+4. go down a bathtub drain
+5. land on a lever which
+6. sends a diver into a basin which then
+7. causes the trap to descend.
+
+Suppose you can model the success of each component as independent Bernoulli random variables $X_1$ through $X_7$, where the probability of $X_i$ succeeding is $.94$ for each component. 
+
+a. What is the probability that the trap works correctly from beginning to end?
+b. If you attempt the trap 15 times during a game, how many times do you expect it to work correctly from beginning to end?
+c. Suppose you let the marble go: Let $Y$ be the number of components of the trap that work in a row. If one component fails, then you stop counting. Calculate the probability mass function of $Y$. *Hints: $Y$ can have values $0, 1, 2, 3, 4, 5, 6$ or $7$). This is like a Geometric except it does not have infinite support. How can you use this fact to determine the pmf? But what is a 'success' in this context?*
+d. Calculate the expected value of $Y$ and its variance. 
+e. What is $P(Y = 6 | Y \geq 3)$?
+
+## 4. Bayes Rule with forecasting  <small>(9 points, 3 points each)</small>
+
+Madison, Wisconsin gets about 115 days of precipitation per year (we'll just call it rain for the remainder of this problem, even though it is often snow). Suppose that when it rains, the forecast on Channel 3000 is correct 93% of the time and when it doesn't rain they are correct 87% of the time.
+
+a. How many correctly forecasted days do you expect in a 365 day year?
+b. If the forecast calls for rain, what is the likelihood that it actually rains?
+c. Suppose that if the forecast was correct yesterday then it increases the likelihood of correctness today. Specifically, if the forecast was correct yesterday, then the probabilities from part a. increase to .98 and .92 respectively. If the forecast was correct on January 29th, what is the probability it was correct on January 28th? To answer this, let us take it as given that the forecast was **incorrect** on the 27th.

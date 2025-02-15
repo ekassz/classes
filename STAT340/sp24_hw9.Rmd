@@ -1,0 +1,284 @@
+---
+title: "Homework 9"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Problem 1 More regression with `mtcars` (12 points; 2 pts each)
+
+In lecture, we worked briefly with the `mtcars` data set.
+Let's get more regression practice by working with it some more.
+
+### a) background
+
+Run `?mtcars` in the console (please __do not__ add it to this `Rmd` file) and briefly read the help page.
+Specifically, take note of the following:
+
+1. What is the source of this data?
+2. What is this data set measuring (i.e., what was the response variable in the original study, at least based on the brief description in the R documentation)?
+3. What predictors are available and what do they mean?
+
+***
+
+The source of this data is: Henderson and Velleman (1981), Building multiple regression models interactively. Biometrics, 37, 391–411.
+The data is measuring fuel consumption and 10 aspects of automobile design and performance for 32 automobiles.
+There's 11 predictors available from what we see in the format table: mpg, cyl, disp, hp, drat, wt, qsec, vs, am, gear, and carb. We can choose more than one of these to fit into the multiple regression model to predict another numeric variable from the table.
+
+***
+
+You may want to also run `head(mtcars, 10)` or `View(mtcars)` to inspect the data frame briefly before moving on.
+
+### b) Fitting a model
+
+Use `lm` to run a regression of `mpg` on a few predictors in the data frame (choose two or three that you think would make a good model-- don't use all ten; we'll talk about why in later lectures).
+Make sure to include `data = mtcars` as a keyword argument to `lm` so that R knows what data frame to use.
+
+```{r}
+lm.mtcars = lm(mpg ~ qsec + hp, data = mtcars)
+plot(lm.mtcars, ask = F, which = 1:2)
+```
+
+Briefly inspect the residuals plot by running `plot(lm.mtcars,ask=F,which=1:2)`.
+What do you observe, and what does it mean?
+
+***
+I ran a regression to predict mpg by the mile time (qsec) and gross horsepower (hp) and looking at the graph, we can see that qsec and hp essentially do a really good job a the beginning for predicting the miles/gallon (mpg) since most of the points fall along the line until it starts getting over (1,1) is where it gets more randomized, but for the most part this means that this is a normally distributed set of residuals.
+***
+
+### c) Interpreting the model
+
+View the summary of your model by uncommenting and running the code below.
+```{r}
+summary(lm.mtcars)
+```
+
+Pick one of your predictors and give an interpretation of the estimate and standard error for its coefficient.
+Be careful in your wording of the interpretation.
+
+***
+The estimate for hp is negative meaning that for each additional unit that increases for hp, mpg decreases by ~0.85.The std. error for hp is 0.014 which means that, that's how much it would vary if estimated with a different sample but looking a t value of -6.1, we can determine that there is a negative relationship between hp and mpg.
+***
+
+Which coefficients are statistically significantly different from zero? How do you know?
+
+***
+
+Being statistically significant different from zero means that it has to be less than 0.05 for the pvalue. Here hp is the only statistically significant coefficient, we can also tell because it's usually what is highlighted with the stars. 
+***
+
+### d) Interpreting residuals
+
+What is the Residual Standard Error (RSE) for this model? How many degrees of freedom does it have?
+
+***
+
+The RSE is 3.755 on 29 degrees of freedom. 
+***
+
+What is the value of $R^2$ for this model? (__Hint:__ look at the output of `summary`) Give an interpretation of this value.
+
+***
+
+The value of $R^2$ is 0.6369, since its close to 1, we can be confident that our linear model is accurately capturing the structure in the data for mgc ~ qsec + hp.
+***
+
+### e) Adjusted $R^2$
+
+Briefly read about the adjusted $R^2$ [here](https://www.statisticshowto.com/probability-and-statistics/statistics-definitions/adjusted-r2/).
+What is the adjusted $R^2$ of this model and how does this differ from the usual $R^2$ value? (__Hint:__ again, look at the output of `summary`).
+
+***
+The adjusted $R^2$ of this model is 0.61 which differs around 0.02 less than the usual $R^2$ value meaning that it took into account both variables that were added into the model and decided to give us a penalty for including both predictors.
+***
+
+### f) CIs for coefficients
+
+Read the documentation for the `confint` function, and use it to generate $95\%$ confidence intervals for the coefficients of your model.
+Give an interpretation of these confidence intervals.
+
+```{r}
+confint(lm.mtcars)
+```
+
+***
+The 95% confidence interval for the intercept ranges from 25.6 to 71.03. The 95% confidence interval for qsec ranges from -1.97 to 0.206 which includes a 0 meaning that it's statistically significant. The 95% confidence interval for hp from -0.11 to -0.05 means that it is statistically significant since it's negative meaning there is a decrease in mpg when associated with an increase in hp. 
+***
+
+
+## Problem 2) the `cats` data set (8 points; 2pts each)
+
+The `cats` data set, included in the `MASS` library, contains data recorded from 144 cats.
+Each row of the data set contains the body weight (`Bwt`, in kgs), heart weight (`Hwt`, in grams) and the sex (`Sex`, levels `'F'` and `'M'`) for one of the cats in the data set.
+
+### a) plotting the data
+
+Create a scatter plot showing heart weight on the y-axis and body weight on the x-axis.
+Ignore the `Sex` variable in this plot.
+
+```{r}
+library(MASS)
+head(cats)
+```
+
+```{r}
+
+# TODO: plotting code goes here.
+
+```
+
+Briefly describe what you see. Is there a clear trend in the data?
+
+### b) fitting a linear model
+
+Fit a linear regression model to predict cat heart weight from cat body weight (and using an intercept term, of course).
+
+```{r}
+
+# TODO: regression code goes here.
+
+```
+
+Examine the coefficients of your fitted model.
+What is the coefficient for the `Bwt` variable?
+Interpret this coefficient-- a unit change in body weight yields how much change in heart weight?
+
+```{r}
+
+# TODO: additional code (if needed to extract coefficients) here
+
+```
+
+***
+
+TODO: discussion/explanation goes here.
+
+***
+
+### c) back to plotting
+
+Create the same plot from Part a above, but this time color the points in the scatter plot according to the `Sex` variable.
+You may use either `ggplot2` or the built-in R plotting tools, though I would recommend the former, for this.
+
+You should see a clear pattern. Describe it. A sentence or two is fine here.
+
+```{r}
+
+#TODO: plotting code goes here.
+
+```
+
+***
+
+TODO: discussion/explanation goes here.
+
+***
+
+### d) adding `Sex` and an interaction
+
+From looking at the data, it should be clear that the `Sex` variable has explanatory power in predicting heart weight, but it is also very correlated with body weight.
+
+Fit a new linear regression model, still predicting heart weight, but this time including both body weight and sex as predictors *and* an interaction term between body weight and sex.
+Take note of how R assigns `Sex` a dummy encoding.
+
+```{r}
+
+# TODO: code to specify and fit the model goes here.
+
+```
+
+Examine the outputs of your model.
+In particular, note the coefficients of `Sex` and the interaction between `Bwt` and `Sex`.
+Are both of these coefficients statistically significantly different from zero?
+How do you interpret the interaction term?
+
+***
+
+TODO: discussion/explanation goes here.
+
+***
+
+
+## Problem 3 - Using Multiple regression to fit nonlinear data (10 points, 2.5 pts each)
+
+Open the dataset `multData.csv`. This data set consists of three predictor variables, simply named `X1`, `X2` and `X3`. The response variable is `Y`. In this problem you will explore how to use the multiple regression model to model nonlinear relationships.
+
+### a) the first model
+
+First we will explore the relationship between $Y$ and the first two predictors $X1$ and $X2$. Fit the linear model
+
+$$Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \epsilon$$
+Interpret the coefficients of both X1 and X2. 
+
+```{r}
+
+# TODO: code goes here
+
+```
+
+***
+
+TODO: discussion/explanation goes here.
+
+***
+
+
+### b) Investigating interaction of quantitative predictors
+
+Next introduce an interaction term to the model
+$$Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_1\cdot X_2 + \epsilon$$
+
+Fit the model and view the summary output. Has this improved the model fit? Did anything surprising happen to the coefficients? Try to explain what happened.
+
+
+```{r}
+
+# TODO: code goes here
+
+```
+
+***
+
+TODO: discussion/explanation goes here.
+
+***
+
+
+### c) Introducing the last predictor
+
+Next fit a model that introduces the `X3` variable. 
+
+$$Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_1\cdot X_2  + \beta_4 X_3 \epsilon$$
+Has the model fit improved? In what way (Justify your answer)? 
+
+```{r}
+
+# TODO: code goes here
+
+```
+
+***
+
+TODO: discussion/explanation goes here.
+
+***
+
+
+### d) Considering higher order terms
+
+Finally explore higher order terms for the X3 variable: Introduce $X3^2$, $X3^3$ etc and determine if any of these higher order terms are justified in the model. Explain your reasoning and present your final model. Look at the diagnostic plots and discuss whether the assumptions of the multiple regression model seem to be justified.
+
+```{r}
+
+# TODO: code goes here
+
+```
+
+***
+
+TODO: discussion/explanation goes here.
+
+***

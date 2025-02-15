@@ -1,0 +1,216 @@
+---
+title: "Homework1"
+author: "Emili Robles"
+date: "2024-09-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+```
+
+## NYC Flights
+```{r}
+install.packages("nycflights13")
+library(nycflights13)
+library(dplyr)
+library(ggplot2)
+
+# a.
+flights |> 
+  select(carrier, air_time, distance) |>
+  filter(air_time > 0)|>
+  mutate(speed = (distance / air_time) * 60) -> flights_and_speed
+  
+# b.
+ggplot(flights_and_speed, aes(x = carrier, y = speed)) +
+  geom_boxplot() +
+  ggtitle("Variation in Flight Speed across Carriers") 
+  
+
+```
+
+#### There doesn't seem to be a crazy variation in flight speed across carriers because looking at median percentile most carriers fall along the 400 speed. But what does vary is the consistency, because for example, we have carriers like US and YV who have a taller boxes which indicate more variability in flight speed. And then we see AS, HA, and OO who are very small meaning they're more consistent. Overall there are some distinct features having to show the amount of variability and consistency some carrier have. 
+
+## London Olympics
+```{r}
+library(readr)
+olympics <- read_csv("https://uwmadison.box.com/shared/static/rzw8h2x6dp5693gdbpgxaf2koqijo12l.csv")
+
+ggplot(olympics, aes(x = reorder(Sport, Age, FUN = median), y = Age, fill = Sex)) + 
+  geom_boxplot() +
+  stat_summary(fun = mean, geom = "point", aes(color=Sex), size = 2, position = position_dodge(0.75)) +
+  ggtitle("Average Age for Sports") +
+  facet_wrap(~Sex) +
+  xlab("Sport")
+
+```
+
+#### What's the difference between male and female average ages throughout the sports? Taking a first look at both graphs, there's not much of a difference but we can see that with the first sport there's a drastic difference with females around their 20s vs males around 30s. We can also see that overall, there are older males in sports compared to women.
+
+## Pokemon
+
+#### a. Faceting and compound figures have the similar idea of splitting smaller graphs to represent data but the key difference is that when you facet, you're creating similar graphs, whether they all be some sort of bar, linear, box plot graph, etc. Compound figures on the other hand are split off into smaller different graphs, for example, having a mix of a bar, scatter, and linear graph. 
+
+```{r}
+library(patchwork)
+#b.
+pokemon <- read_csv("https://uwmadison.box.com/shared/static/hf5cmx3ew3ch0v6t0c2x56838er1lt2c.csv")
+#head(pokemon, 3)
+
+p1 <- ggplot(pokemon, aes(x = reorder(type_1, -table(type_1)[type_1]))) +
+  geom_bar() + 
+  xlab("Type 1 Category") +
+  ylab("Frequency")
+
+
+p2 <- ggplot(pokemon, aes(x = HP)) +
+  geom_histogram() +
+  ylab("Frequency")
+
+
+p3 <- ggplot(pokemon) +
+  geom_point(aes(Attack, Defense))
+
+
+(p1 / (p2 | p3) +
+    plot_annotation(
+      tag_levels = "i",
+      tag_prefix = "(",
+      tag_suffix = ")"
+    ))
+```
+
+#### c. Something very minimal yet important to improve readability for faceted or compound figures would be to consistently add axis labeling and scaling. I think it'd look much more clear if each graph had the same scale so that it's not as confusing when looking at the next graph and having to reorient yourself to focus on the variation of the y-axis.
+
+## Gene Expression Faceting
+```{r}
+library(readr)
+library(ggplot2)
+#a.
+genes <- read_csv("https://uwmadison.box.com/shared/static/dwzchdtfca33r0f6i055k2d0939onnlv.csv")
+#head(genes, 3)
+
+facet <- ggplot(genes, aes(x = time, y = log( 1 + value))) +
+  geom_point(shape = 16, alpha = 0.1) +
+  facet_wrap(~gene, ncol = 4)
+
+facet
+```
+
+#### b. One strength is that you're able to see all comparisons at once so it allows you to spot key differences faster instead of having it either all on one or going through graph by graph. One weakness though is that able to focus on one particular one at a time, especially because of the scale, since it keeps it consistent, lets say one graph realistically only need half of the scale shown and it doesn't allow you to look closer into it.
+
+```{r}
+library(dplyr)
+#c.
+gene_groups <- genes |>
+group_by(gene, rounded_time = round(time, 2)) |>
+summarise(mean_value = mean(value))
+head(gene_groups, 3)
+
+gene_groups <- gene_groups %>%
+  group_by(gene) %>%
+  mutate(total_mean = sum(mean_value)) %>%
+  ungroup() %>%
+  arrange(desc(total_mean))
+
+ggplot(gene_groups, aes(x = rounded_time, y = reorder(gene, total_mean), fill = log(1 + mean_value))) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "blue", name = "log(1 + mean_value)") +
+  labs(x = "Time (Rounded)", y = "Gene (Sorted by Expression)") +
+  theme_minimal()
+```
+```{r}
+#d. 
+genes <- read_csv("https://uwmadison.box.com/shared/static/dwzchdtfca33r0f6i055k2d0939onnlv.csv")
+fitted_values <- read_csv("https://go.wisc.edu/x678hu")
+#head(fitted_values, 3)
+
+facet <- ggplot() +
+  geom_point(data = genes, aes(x = time, y = log( 1 + value)), shape = 16, alpha = 0.1) +
+  geom_point(data = fitted_values, aes(x = time, y = log( 1 + mu)), shape = 16, alpha = 0.1, color = "red") +
+  facet_wrap(~gene, ncol = 4)
+
+facet
+```
+
+#### This relates to the concept of a "grammar of graphics" because it connects to the aesthetics of making graphs visually apealing to the users eye. By layering 2 geom_points, we're making it easier to understand the pattern that each graph holds.
+
+## Visual Redesign
+
+#### a.
+
+![Past Visualization Screenshot](C:/Users/Emili/Pictures/Screenshots/oldVisual.png)
+
+#### b. Main takeaways from the graph is basically comparing the change over the anual average Temperature in Farenheit from the span of around 1900s-2000s. The main highlights is that we're trying to prove the impact of climate change and how the temperature has slowly been rising but you can't really visualize it through this graph.
+
+#### c. What's cluttered is the fact that it's a linear graph which already makes it look like a bunch of scribbles, making it hard to focus on what we want to show. The original visualization overall just isn't the best as it's very vague and from first hand- you don't really know what connection you're actually supposed to make.
+
+
+```{r}
+#d. 
+temp <- read.csv("/Users/Emili/Desktop/STAT340/data/annual_avg_temp.csv")
+temps <- temp$Annual.Average.Temperature.F
+
+new_temp <- ggplot(temp, aes(Year, Annual.Average.Temperature.F)) +
+  geom_point(shape = 16, alpha = 0.5, color="blue", size = 2) +
+  geom_smooth(method = "lm", color = "red", se=FALSE, linetype = "solid") +
+  labs(
+    y = "Annual Average Temperature (°F)",
+    title = "Annual Average Temperature Over Years"
+  )
+  
+  
+
+new_temp
+```
+
+
+## California Wildfires Alternatives
+
+#### a. This visual is well-suited to be able to represent what year burned the most acres, as we can see 2017 and 2018 there seems to be a wider variety and the scale that we have to measure acres burned also increases. One thing that makes this visualization poorly suited though is the fact that we can't tell exactly from which county or which dates were the most popular. Because there's a lot of variation from measuring from the full years and counting in days, it makes it very difficult to see any patterns other than the scalabity of acres burned.
+
+#### b. In this visualization the boxplot does a great way to showcase a big pattern that seems to look like the average for false major incidents being around the same and consistent every year. But something that makes me question the graph is what counties specifically? In this graph there's no visualization to showcase the 'who' of the situation.
+
+#### c. I like that this visualization is displayed in descending order because you can right away see which fires were a bigger impact. But one thing that makes this visualization not ass good is the color coordinated with each year, this would have been much better with a gradient effect to be easy on the eyes instead of having a burst of colors.
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+#d.
+fires <- read_csv("https://uwmadison.box.com/shared/static/k5vvekf1bhh9e16qb9s66owygc70t7dm.csv") %>%
+  select(Name, Counties, year, AcresBurned)
+
+fires_summary <- fires %>%
+  group_by(Counties, year) %>%
+  summarize(Total_Acres_Burned = sum(AcresBurned, na.rm = TRUE)) %>%
+  ungroup()
+
+ggplot(fires_summary, aes(x = Counties, y = Total_Acres_Burned, fill = Total_Acres_Burned)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +  
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +   
+  labs(title = "Total Acres Burned by County and Year",
+       x = "County",
+       y = "Total Acres Burned",
+       fill = "Acres Burned") +
+  theme_minimal() +  # Use a minimal theme for simplicity
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  
+
+
+```
+
+## Homelessness
+
+![Map Visualization](C:/Users/Emili/Pictures/Screenshots/mapVisual.png)
+
+#### a. Each row looks like it represents a unique relocation journey of homeless individuals to a destination city within the mainland U.S. The columns look like it consists of the year, destinication city, number of arrivals, latitude, and longitude. Looks like the overall underlying data could be measure per year, indicating how many people were relocated to a specific city in a given year.
+
+#### b. The data types seem to be: Year(integer), Destination Cities(strings), Number of Arrivals(integer), Latitude(float), and Longitude(float)
+
+#### c. The position of the bubbles on the map encodes the geographical location of the destination cities (latitude and longitude).The size of the circles (bubbles) encodes the number of homeless arrivals to that destination city. Larger circles represent a higher number of arrivals, while smaller circles represent fewer arrivals.The light blue looks like a specific category or a visual cue, probably presenting the same type of data but differentiated from other elements in the visual.
+
+#### d. Yes, multi-view composition is being used in this visualization with map viw because it displays the geographic distribution of relocation journeys, and also the bar chart view in the bottom to actually show a time series representation of the total number of relocations per year. 
